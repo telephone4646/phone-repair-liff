@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Admin - ระบบแจ้งซ่อมโทรศัพท์ บน.46</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 30px auto;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #1976d2;
+      margin-bottom: 5px;
+    }
+
+    .subtitle {
+      color: #777;
+      margin-bottom: 25px;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .stat {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.06);
+    }
+
+    .stat-title {
+      color: #777;
+      font-size: 14px;
+    }
+
+    .stat-number {
+      font-size: 30px;
+      font-weight: bold;
+      margin-top: 8px;
+      color: #1976d2;
+    }
+
+    .table-card {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.06);
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 850px;
+    }
+
+    th,
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+    }
+
+    th {
+      background: #f8f9fa;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .working {
+      background: #cfe2ff;
+      color: #084298;
+    }
+
+    .completed {
+      background: #d1e7dd;
+      color: #0f5132;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      background: #1976d2;
+      color: white;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 30px;
+      color: #777;
+    }
+
+    .error {
+      color: #dc3545;
+      text-align: center;
+      padding: 20px;
+    }
+
+    @media (max-width: 700px) {
+
+      .dashboard {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .container {
+        margin: 10px auto;
+        padding: 10px;
+      }
+
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>📱 ระบบจัดการแจ้งซ่อมโทรศัพท์</h1>
+
+  <div class="subtitle">
+    Admin Dashboard — ระบบแจ้งซ่อมโทรศัพท์ บน.46
+  </div>
+
+  <div class="dashboard">
+
+    <div class="stat">
+      <div class="stat-title">รายการทั้งหมด</div>
+      <div class="stat-number" id="totalCount">0</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-title">รอตรวจสอบ</div>
+      <div class="stat-number" id="pendingCount">0</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-title">กำลังดำเนินการ</div>
+      <div class="stat-number" id="workingCount">0</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-title">ซ่อมเสร็จแล้ว</div>
+      <div class="stat-number" id="completedCount">0</div>
+    </div>
+
+  </div>
+
+
+  <div class="table-card">
+
+    <h2>📋 รายการแจ้งซ่อม</h2>
+
+    <div id="loading" class="loading">
+      กำลังโหลดข้อมูล...
+    </div>
+
+    <div id="error" class="error" style="display:none;"></div>
+
+    <table id="reportsTable" style="display:none;">
+
+      <thead>
+
+        <tr>
+          <th>Ticket</th>
+          <th>เบอร์โทร</th>
+          <th>ผู้แจ้ง</th>
+          <th>แผนก</th>
+          <th>สถานที่</th>
+          <th>ปัญหา</th>
+          <th>สถานะ</th>
+          <th>ผู้รับผิดชอบ</th>
+        </tr>
+
+      </thead>
+
+      <tbody id="reportsBody"></tbody>
+
+    </table>
+
+  </div>
+
+</div>
+
+
+<script>
+
+  const GAS_URL =
+    "https://script.google.com/macros/s/AKfycbzng6R4jUPXctKgFKu9xkVgQIDNW8ZBhJiHg1ozGYg31aiT_nIYkDAMqyhUt25N_R8U-g/exec";
+
+
+  // =====================================================
+  // โหลดรายการแจ้งซ่อม
+  // =====================================================
+
+  async function loadReports() {
+
+    try {
+
+      const response =
+        await fetch(
+          GAS_URL + "?action=get_reports"
+        );
+
+      const data =
+        await response.json();
+
+      if (!data.success) {
+        throw new Error(
+          "ไม่สามารถโหลดข้อมูลได้"
+        );
+      }
+
+      const reports =
+        data.reports || [];
+
+      updateDashboard(reports);
+
+      displayReports(reports);
+
+    } catch (error) {
+
+      console.error(error);
+
+      document.getElementById(
+        "loading"
+      ).style.display = "none";
+
+      const errorBox =
+        document.getElementById("error");
+
+      errorBox.style.display = "block";
+
+      errorBox.textContent =
+        "เกิดข้อผิดพลาดในการโหลดข้อมูล: " +
+        error.message;
+
+    }
+
+  }
+
+
+  // =====================================================
+  // Dashboard
+  // =====================================================
+
+  function updateDashboard(reports) {
+
+    const total =
+      reports.length;
+
+    const pending =
+      reports.filter(function(report) {
+
+        return report.status ===
+          "รอตรวจสอบ";
+
+      }).length;
+
+    const working =
+      reports.filter(function(report) {
+
+        return report.status ===
+          "กำลังดำเนินการ";
+
+      }).length;
+
+    const completed =
+      reports.filter(function(report) {
+
+        return report.status ===
+          "ซ่อมเสร็จแล้ว";
+
+      }).length;
+
+
+    document.getElementById(
+      "totalCount"
+    ).textContent = total;
+
+    document.getElementById(
+      "pendingCount"
+    ).textContent = pending;
+
+    document.getElementById(
+      "workingCount"
+    ).textContent = working;
+
+    document.getElementById(
+      "completedCount"
+    ).textContent = completed;
+
+  }
+
+
+  // =====================================================
+  // แสดงตาราง
+  // =====================================================
+
+  function displayReports(reports) {
+
+    const tbody =
+      document.getElementById(
+        "reportsBody"
+      );
+
+    tbody.innerHTML = "";
+
+
+    reports.forEach(function(report) {
+
+      const row =
+        document.createElement("tr");
+
+
+      let statusClass =
+        "pending";
+
+      if (
+        report.status ===
+        "กำลังดำเนินการ"
+      ) {
+
+        statusClass =
+          "working";
+
+      }
+
+      if (
+        report.status ===
+        "ซ่อมเสร็จแล้ว"
+      ) {
+
+        statusClass =
+          "completed";
+
+      }
+
+
+      row.innerHTML = `
+
+        <td>
+          <strong>
+            ${escapeHtml(report.ticket)}
+          </strong>
+        </td>
+
+        <td>
+          ${escapeHtml(report.phone)}
+        </td>
+
+        <td>
+          ${escapeHtml(report.reporter)}
+        </td>
+
+        <td>
+          ${escapeHtml(report.department)}
+        </td>
+
+        <td>
+          ${escapeHtml(report.location)}
+        </td>
+
+        <td>
+          ${escapeHtml(report.problem)}
+        </td>
+
+        <td>
+          <span class="status ${statusClass}">
+            ${escapeHtml(report.status)}
+          </span>
+        </td>
+
+        <td>
+          ${escapeHtml(report.technician || "-")}
+        </td>
+
+      `;
+
+      tbody.appendChild(row);
+
+    });
+
+
+    document.getElementById(
+      "loading"
+    ).style.display = "none";
+
+    document.getElementById(
+      "reportsTable"
+    ).style.display = "table";
+
+  }
+
+
+  // =====================================================
+  // ป้องกัน HTML แปลกปลอม
+  // =====================================================
+
+  function escapeHtml(value) {
+
+    if (value === null ||
+        value === undefined) {
+
+      return "";
+
+    }
+
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+  }
+
+
+  // =====================================================
+  // เริ่มต้น
+  // =====================================================
+
+  window.addEventListener(
+    "load",
+    loadReports
+  );
+
+</script>
+
+</body>
+</html>
