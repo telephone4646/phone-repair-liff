@@ -7,6 +7,7 @@
   <title>Admin - ระบบแจ้งซ่อมโทรศัพท์ บน.46</title>
 
   <style>
+
     * {
       box-sizing: border-box;
     }
@@ -19,7 +20,7 @@
     }
 
     .container {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 30px auto;
       padding: 20px;
     }
@@ -71,7 +72,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 850px;
+      min-width: 1050px;
     }
 
     th,
@@ -79,6 +80,7 @@
       padding: 12px;
       border-bottom: 1px solid #eee;
       text-align: left;
+      vertical-align: middle;
     }
 
     th {
@@ -91,6 +93,7 @@
       border-radius: 20px;
       font-size: 13px;
       font-weight: bold;
+      white-space: nowrap;
     }
 
     .pending {
@@ -115,6 +118,7 @@
       background: #1976d2;
       color: white;
       cursor: pointer;
+      font-weight: bold;
     }
 
     .btn:hover {
@@ -133,6 +137,105 @@
       padding: 20px;
     }
 
+    /* =====================================================
+       Modal
+       ===================================================== */
+
+    .modal {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 999;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-card {
+      background: white;
+      width: 100%;
+      max-width: 550px;
+      max-height: 90vh;
+      overflow-y: auto;
+      border-radius: 18px;
+      padding: 25px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+
+    .modal-title {
+      margin-top: 0;
+      color: #1976d2;
+    }
+
+    .detail-box {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+
+    .detail-row {
+      margin-bottom: 8px;
+    }
+
+    .detail-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .detail-label {
+      font-weight: bold;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-top: 15px;
+      margin-bottom: 6px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .modal-buttons button {
+      flex: 1;
+    }
+
+    .btn-save {
+      background: #198754;
+    }
+
+    .btn-cancel {
+      background: #6c757d;
+    }
+
+    .success-message {
+      text-align: center;
+      color: #198754;
+      font-weight: bold;
+      margin-top: 15px;
+      display: none;
+    }
+
     @media (max-width: 700px) {
 
       .dashboard {
@@ -144,8 +247,14 @@
         padding: 10px;
       }
 
+      .modal-card {
+        padding: 20px;
+      }
+
     }
+
   </style>
+
 </head>
 
 <body>
@@ -158,30 +267,62 @@
     Admin Dashboard — ระบบแจ้งซ่อมโทรศัพท์ บน.46
   </div>
 
+
+  <!-- =====================================================
+       Dashboard
+       ===================================================== -->
+
   <div class="dashboard">
 
     <div class="stat">
-      <div class="stat-title">รายการทั้งหมด</div>
-      <div class="stat-number" id="totalCount">0</div>
+      <div class="stat-title">
+        รายการทั้งหมด
+      </div>
+
+      <div class="stat-number" id="totalCount">
+        0
+      </div>
     </div>
 
-    <div class="stat">
-      <div class="stat-title">รอตรวจสอบ</div>
-      <div class="stat-number" id="pendingCount">0</div>
-    </div>
 
     <div class="stat">
-      <div class="stat-title">กำลังดำเนินการ</div>
-      <div class="stat-number" id="workingCount">0</div>
+      <div class="stat-title">
+        รอตรวจสอบ
+      </div>
+
+      <div class="stat-number" id="pendingCount">
+        0
+      </div>
     </div>
 
+
     <div class="stat">
-      <div class="stat-title">ซ่อมเสร็จแล้ว</div>
-      <div class="stat-number" id="completedCount">0</div>
+      <div class="stat-title">
+        กำลังดำเนินการ
+      </div>
+
+      <div class="stat-number" id="workingCount">
+        0
+      </div>
+    </div>
+
+
+    <div class="stat">
+      <div class="stat-title">
+        ซ่อมเสร็จแล้ว
+      </div>
+
+      <div class="stat-number" id="completedCount">
+        0
+      </div>
     </div>
 
   </div>
 
+
+  <!-- =====================================================
+       ตาราง
+       ===================================================== -->
 
   <div class="table-card">
 
@@ -191,28 +332,173 @@
       กำลังโหลดข้อมูล...
     </div>
 
-    <div id="error" class="error" style="display:none;"></div>
+    <div
+      id="error"
+      class="error"
+      style="display:none;"
+    ></div>
 
-    <table id="reportsTable" style="display:none;">
+
+    <table
+      id="reportsTable"
+      style="display:none;"
+    >
 
       <thead>
 
         <tr>
+
           <th>Ticket</th>
+
           <th>เบอร์โทร</th>
+
           <th>ผู้แจ้ง</th>
+
           <th>แผนก</th>
+
           <th>สถานที่</th>
+
           <th>ปัญหา</th>
+
           <th>สถานะ</th>
+
           <th>ผู้รับผิดชอบ</th>
+
+          <th>จัดการ</th>
+
         </tr>
 
       </thead>
 
+
       <tbody id="reportsBody"></tbody>
 
     </table>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     Modal จัดการงาน
+     ===================================================== -->
+
+<div
+  class="modal"
+  id="repairModal"
+>
+
+  <div class="modal-card">
+
+    <h2 class="modal-title">
+      ⚙️ จัดการงานแจ้งซ่อม
+    </h2>
+
+
+    <div class="detail-box">
+
+      <div class="detail-row">
+        <span class="detail-label">Ticket:</span>
+        <span id="modalTicket"></span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">เบอร์โทร:</span>
+        <span id="modalPhone"></span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">ผู้แจ้ง:</span>
+        <span id="modalReporter"></span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">แผนก:</span>
+        <span id="modalDepartment"></span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">สถานที่:</span>
+        <span id="modalLocation"></span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">ปัญหา:</span>
+        <span id="modalProblem"></span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">รายละเอียด:</span>
+        <span id="modalDetail"></span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">วันที่แจ้ง:</span>
+        <span id="modalCreatedAt"></span>
+      </div>
+
+    </div>
+
+
+    <label>
+      ผู้รับผิดชอบงาน
+    </label>
+
+    <input
+      type="text"
+      id="technician"
+      placeholder="กรอกชื่อผู้รับผิดชอบ"
+    >
+
+
+    <label>
+      สถานะ
+    </label>
+
+    <select id="status">
+
+      <option value="รอตรวจสอบ">
+        รอตรวจสอบ
+      </option>
+
+      <option value="กำลังดำเนินการ">
+        กำลังดำเนินการ
+      </option>
+
+      <option value="ซ่อมเสร็จแล้ว">
+        ซ่อมเสร็จแล้ว
+      </option>
+
+    </select>
+
+
+    <div
+      id="successMessage"
+      class="success-message"
+    >
+      ✅ บันทึกข้อมูลเรียบร้อยแล้ว
+    </div>
+
+
+    <div class="modal-buttons">
+
+      <button
+        class="btn btn-save"
+        id="saveBtn"
+        onclick="saveRepair()"
+      >
+        💾 บันทึก
+      </button>
+
+      <button
+        class="btn btn-cancel"
+        onclick="closeModal()"
+      >
+        ปิด
+      </button>
+
+    </div>
 
   </div>
 
@@ -225,8 +511,13 @@
     "https://script.google.com/macros/s/AKfycbzng6R4jUPXctKgFKu9xkVgQIDNW8ZBhJiHg1ozGYg31aiT_nIYkDAMqyhUt25N_R8U-g/exec";
 
 
+  let reports = [];
+
+  let selectedReport = null;
+
+
   // =====================================================
-  // โหลดรายการแจ้งซ่อม
+  // โหลดข้อมูล
   // =====================================================
 
   async function loadReports() {
@@ -242,19 +533,23 @@
         await response.json();
 
       if (!data.success) {
+
         throw new Error(
           "ไม่สามารถโหลดข้อมูลได้"
         );
+
       }
 
-      const reports =
+      reports =
         data.reports || [];
 
       updateDashboard(reports);
 
       displayReports(reports);
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
       console.error(error);
 
@@ -263,9 +558,12 @@
       ).style.display = "none";
 
       const errorBox =
-        document.getElementById("error");
+        document.getElementById(
+          "error"
+        );
 
-      errorBox.style.display = "block";
+      errorBox.style.display =
+        "block";
 
       errorBox.textContent =
         "เกิดข้อผิดพลาดในการโหลดข้อมูล: " +
@@ -285,6 +583,7 @@
     const total =
       reports.length;
 
+
     const pending =
       reports.filter(function(report) {
 
@@ -293,6 +592,7 @@
 
       }).length;
 
+
     const working =
       reports.filter(function(report) {
 
@@ -300,6 +600,7 @@
           "กำลังดำเนินการ";
 
       }).length;
+
 
     const completed =
       reports.filter(function(report) {
@@ -314,13 +615,16 @@
       "totalCount"
     ).textContent = total;
 
+
     document.getElementById(
       "pendingCount"
     ).textContent = pending;
 
+
     document.getElementById(
       "workingCount"
     ).textContent = working;
+
 
     document.getElementById(
       "completedCount"
@@ -340,6 +644,7 @@
         "reportsBody"
       );
 
+
     tbody.innerHTML = "";
 
 
@@ -352,6 +657,7 @@
       let statusClass =
         "pending";
 
+
       if (
         report.status ===
         "กำลังดำเนินการ"
@@ -361,6 +667,7 @@
           "working";
 
       }
+
 
       if (
         report.status ===
@@ -408,10 +715,22 @@
         </td>
 
         <td>
-          ${escapeHtml(report.technician || "-")}
+          ${escapeHtml(
+            report.technician || "-"
+          )}
+        </td>
+
+        <td>
+          <button
+            class="btn"
+            onclick="openRepair(${report.id})"
+          >
+            ⚙️ จัดการ
+          </button>
         </td>
 
       `;
+
 
       tbody.appendChild(row);
 
@@ -422,6 +741,7 @@
       "loading"
     ).style.display = "none";
 
+
     document.getElementById(
       "reportsTable"
     ).style.display = "table";
@@ -430,17 +750,291 @@
 
 
   // =====================================================
-  // ป้องกัน HTML แปลกปลอม
+  // เปิดหน้าจัดการ
+  // =====================================================
+
+  function openRepair(id) {
+
+    selectedReport =
+      reports.find(function(report) {
+
+        return Number(report.id) ===
+          Number(id);
+
+      });
+
+
+    if (!selectedReport) {
+
+      alert(
+        "ไม่พบรายการแจ้งซ่อม"
+      );
+
+      return;
+
+    }
+
+
+    document.getElementById(
+      "modalTicket"
+    ).textContent =
+      selectedReport.ticket;
+
+
+    document.getElementById(
+      "modalPhone"
+    ).textContent =
+      selectedReport.phone;
+
+
+    document.getElementById(
+      "modalReporter"
+    ).textContent =
+      selectedReport.reporter;
+
+
+    document.getElementById(
+      "modalDepartment"
+    ).textContent =
+      selectedReport.department || "-";
+
+
+    document.getElementById(
+      "modalLocation"
+    ).textContent =
+      selectedReport.location || "-";
+
+
+    document.getElementById(
+      "modalProblem"
+    ).textContent =
+      selectedReport.problem;
+
+
+    document.getElementById(
+      "modalDetail"
+    ).textContent =
+      selectedReport.detail || "-";
+
+
+    document.getElementById(
+      "modalCreatedAt"
+    ).textContent =
+      formatDate(selectedReport.createdAt);
+
+
+    document.getElementById(
+      "technician"
+    ).value =
+      selectedReport.technician || "";
+
+
+    document.getElementById(
+      "status"
+    ).value =
+      selectedReport.status ||
+      "รอตรวจสอบ";
+
+
+    document.getElementById(
+      "successMessage"
+    ).style.display =
+      "none";
+
+
+    document.getElementById(
+      "repairModal"
+    ).classList.add("show");
+
+  }
+
+
+  // =====================================================
+  // ปิด Modal
+  // =====================================================
+
+  function closeModal() {
+
+    document.getElementById(
+      "repairModal"
+    ).classList.remove("show");
+
+    selectedReport = null;
+
+  }
+
+
+  // =====================================================
+  // บันทึกงาน
+  // =====================================================
+
+  async function saveRepair() {
+
+    if (!selectedReport) {
+
+      alert(
+        "ไม่พบรายการที่กำลังแก้ไข"
+      );
+
+      return;
+
+    }
+
+
+    const status =
+      document.getElementById(
+        "status"
+      ).value;
+
+
+    const technician =
+      document.getElementById(
+        "technician"
+      ).value;
+
+
+    const saveBtn =
+      document.getElementById(
+        "saveBtn"
+      );
+
+
+    saveBtn.disabled = true;
+
+    saveBtn.textContent =
+      "กำลังบันทึก...";
+
+
+    const data =
+      new URLSearchParams();
+
+
+    data.append(
+      "action",
+      "update_repair"
+    );
+
+
+    data.append(
+      "id",
+      selectedReport.id
+    );
+
+
+    data.append(
+      "status",
+      status
+    );
+
+
+    data.append(
+      "technician",
+      technician
+    );
+
+
+    try {
+
+      await fetch(
+        GAS_URL,
+        {
+          method: "POST",
+          body: data,
+          mode: "no-cors"
+        }
+      );
+
+
+      document.getElementById(
+        "successMessage"
+      ).style.display =
+        "block";
+
+
+      saveBtn.textContent =
+        "บันทึกแล้ว";
+
+
+      setTimeout(
+        function() {
+
+          closeModal();
+
+          saveBtn.disabled =
+            false;
+
+          saveBtn.textContent =
+            "💾 บันทึก";
+
+          loadReports();
+
+        },
+        1000
+      );
+
+    }
+
+    catch (error) {
+
+      console.error(error);
+
+      alert(
+        "เกิดข้อผิดพลาดในการบันทึก"
+      );
+
+
+      saveBtn.disabled =
+        false;
+
+      saveBtn.textContent =
+        "💾 บันทึก";
+
+    }
+
+  }
+
+
+  // =====================================================
+  // วันที่
+  // =====================================================
+
+  function formatDate(value) {
+
+    if (!value) {
+      return "-";
+    }
+
+    const date =
+      new Date(value);
+
+    if (isNaN(date.getTime())) {
+
+      return value;
+
+    }
+
+    return date.toLocaleString(
+      "th-TH"
+    );
+
+  }
+
+
+  // =====================================================
+  // ป้องกัน HTML
   // =====================================================
 
   function escapeHtml(value) {
 
-    if (value === null ||
-        value === undefined) {
+    if (
+      value === null ||
+      value === undefined
+    ) {
 
       return "";
 
     }
+
 
     return String(value)
       .replace(/&/g, "&amp;")
