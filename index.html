@@ -196,7 +196,9 @@
 
       <p>ระบบได้รับแจ้งซ่อมของคุณแล้ว</p>
 
-      <div class="ticket" id="ticketNumber"></div>
+      <div class="ticket" id="ticketNumber">
+        กำลังบันทึกข้อมูล...
+      </div>
 
       <p>กรุณาเก็บหมายเลข Ticket ไว้สำหรับติดตามงาน</p>
 
@@ -209,7 +211,9 @@
 
 <script>
 
-  const LIFF_ID = "2011466060-6CTtEiz2";
+  const LIFF_ID =
+    "2011466060-6CTtEiz2";
+
 
   const GAS_URL =
     "https://script.google.com/macros/s/AKfycbzng6R4jUPXctKgFKu9xkVgQIDNW8ZBhJiHg1ozGYg31aiT_nIYkDAMqyhUt25N_R8U-g/exec";
@@ -217,6 +221,58 @@
 
   let lineUserId = "";
 
+
+  // =====================================================
+  // ส่ง LINE User ID ไปลงทะเบียนใน Apps Script
+  // =====================================================
+
+  async function registerLineUser() {
+
+    const data =
+      new URLSearchParams();
+
+    data.append(
+      "action",
+      "register_line_user"
+    );
+
+    data.append(
+      "line_user_id",
+      lineUserId
+    );
+
+
+    try {
+
+      await fetch(GAS_URL, {
+
+        method: "POST",
+
+        body: data,
+
+        mode: "no-cors"
+
+      });
+
+      console.log(
+        "ลงทะเบียน LINE User สำเร็จ"
+      );
+
+    } catch (error) {
+
+      console.error(
+        "REGISTER ERROR:",
+        error
+      );
+
+    }
+
+  }
+
+
+  // =====================================================
+  // เริ่มต้น LIFF
+  // =====================================================
 
   async function initLiff() {
 
@@ -236,23 +292,41 @@
       }
 
 
-      const profile = await liff.getProfile();
+      const profile =
+        await liff.getProfile();
 
-      lineUserId = profile.userId;
+
+      lineUserId =
+        profile.userId;
 
 
-      document.getElementById("lineStatus").textContent =
+      document.getElementById(
+        "lineStatus"
+      ).textContent =
         "✓ เชื่อมต่อ LINE แล้ว";
 
 
-      console.log("LINE USER ID:", lineUserId);
+      console.log(
+        "LINE USER ID:",
+        lineUserId
+      );
+
+
+      // ลงทะเบียน User
+      await registerLineUser();
 
 
     } catch (error) {
 
-      console.error("LIFF ERROR:", error);
+      console.error(
+        "LIFF ERROR:",
+        error
+      );
 
-      document.getElementById("lineStatus").textContent =
+
+      document.getElementById(
+        "lineStatus"
+      ).textContent =
         "ไม่สามารถเชื่อมต่อ LINE ได้";
 
     }
@@ -260,110 +334,154 @@
   }
 
 
+  // =====================================================
+  // ส่งแบบฟอร์มแจ้งซ่อม
+  // =====================================================
+
   document
     .getElementById("repairForm")
-    .addEventListener("submit", async function(event) {
+    .addEventListener(
+      "submit",
+      async function(event) {
 
-      event.preventDefault();
+        event.preventDefault();
 
 
-      if (!lineUserId) {
+        if (!lineUserId) {
 
-        alert("ยังไม่สามารถเชื่อมต่อ LINE ได้ กรุณาปิดแล้วเปิดระบบใหม่อีกครั้ง");
+          alert(
+            "ยังไม่สามารถเชื่อมต่อ LINE ได้ กรุณาปิดแล้วเปิดระบบใหม่อีกครั้ง"
+          );
 
-        return;
+          return;
+
+        }
+
+
+        const submitBtn =
+          document.getElementById(
+            "submitBtn"
+          );
+
+
+        submitBtn.disabled = true;
+
+        submitBtn.textContent =
+          "กำลังส่งข้อมูล...";
+
+
+        const data =
+          new URLSearchParams();
+
+
+        data.append(
+          "phone_number",
+          document.getElementById(
+            "phone_number"
+          ).value
+        );
+
+
+        data.append(
+          "reporter",
+          document.getElementById(
+            "reporter"
+          ).value
+        );
+
+
+        data.append(
+          "department",
+          document.getElementById(
+            "department"
+          ).value
+        );
+
+
+        data.append(
+          "location",
+          document.getElementById(
+            "location"
+          ).value
+        );
+
+
+        data.append(
+          "problem",
+          document.getElementById(
+            "problem"
+          ).value
+        );
+
+
+        data.append(
+          "detail",
+          document.getElementById(
+            "detail"
+          ).value
+        );
+
+
+        data.append(
+          "line_user_id",
+          lineUserId
+        );
+
+
+        try {
+
+          await fetch(GAS_URL, {
+
+            method: "POST",
+
+            body: data,
+
+            mode: "no-cors"
+
+          });
+
+
+          document.getElementById(
+            "formCard"
+          ).classList.add("hidden");
+
+
+          document.getElementById(
+            "successCard"
+          ).classList.remove("hidden");
+
+
+          document.getElementById(
+            "ticketNumber"
+          ).textContent =
+            "ส่งข้อมูลเรียบร้อยแล้ว";
+
+
+        } catch (error) {
+
+          console.error(error);
+
+
+          alert(
+            "เกิดข้อผิดพลาดในการส่งข้อมูล"
+          );
+
+
+          submitBtn.disabled = false;
+
+          submitBtn.textContent =
+            "📤 ส่งแจ้งซ่อม";
+
+        }
 
       }
+    );
 
 
-      const submitBtn =
-        document.getElementById("submitBtn");
-
-
-      submitBtn.disabled = true;
-
-      submitBtn.textContent = "กำลังส่งข้อมูล...";
-
-
-      const data = new URLSearchParams();
-
-
-      data.append(
-        "phone_number",
-        document.getElementById("phone_number").value
-      );
-
-      data.append(
-        "reporter",
-        document.getElementById("reporter").value
-      );
-
-      data.append(
-        "department",
-        document.getElementById("department").value
-      );
-
-      data.append(
-        "location",
-        document.getElementById("location").value
-      );
-
-      data.append(
-        "problem",
-        document.getElementById("problem").value
-      );
-
-      data.append(
-        "detail",
-        document.getElementById("detail").value
-      );
-
-      data.append(
-        "line_user_id",
-        lineUserId
-      );
-
-
-      try {
-
-        await fetch(GAS_URL, {
-
-          method: "POST",
-
-          body: data,
-
-          mode: "no-cors"
-
-        });
-
-
-        document.getElementById("formCard")
-          .classList.add("hidden");
-
-        document.getElementById("successCard")
-          .classList.remove("hidden");
-
-
-        document.getElementById("ticketNumber").textContent =
-          "กำลังบันทึกข้อมูล...";
-
-
-      } catch (error) {
-
-        console.error(error);
-
-        alert("เกิดข้อผิดพลาดในการส่งข้อมูล");
-
-        submitBtn.disabled = false;
-
-        submitBtn.textContent = "📤 ส่งแจ้งซ่อม";
-
-      }
-
-    });
-
-
-  window.addEventListener("load", initLiff);
+  window.addEventListener(
+    "load",
+    initLiff
+  );
 
 </script>
 
