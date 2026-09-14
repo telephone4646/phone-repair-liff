@@ -561,12 +561,16 @@
 
       }
 
-      reports =
-        data.reports || [];
+     reports =
+  (data.reports || []).filter(function(report) {
+    return String(
+      report.hiddenFromAdmin || ""
+    ).trim() !== "ใช่";
+  });
 
-      updateDashboard(reports);
+updateDashboard(reports);
 
-      displayReports(reports);
+displayReports(reports);
 
     }
 
@@ -1013,6 +1017,89 @@
     }
 
   }
+  function clearCompletedReports() {
+
+  const sheet =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName("Reports");
+
+  if (!sheet) {
+    throw new Error("ไม่พบชีต Reports");
+  }
+
+  const lastRow =
+    sheet.getLastRow();
+
+  if (lastRow < 2) {
+
+    return {
+      success: true,
+      cleared: 0,
+      message: "ยังไม่มีรายการแจ้งซ่อม"
+    };
+
+  }
+
+  // อ่านข้อมูล A ถึง N
+  const range =
+    sheet.getRange(
+      2,
+      1,
+      lastRow - 1,
+      14
+    );
+
+  const values =
+    range.getValues();
+
+  let clearedCount = 0;
+
+  for (let i = 0; i < values.length; i++) {
+
+    const status =
+      String(values[i][8] || "").trim();
+
+    const hidden =
+      String(values[i][13] || "").trim();
+
+    // เฉพาะงานที่ซ่อมเสร็จแล้ว
+    // และยังไม่ได้ถูกซ่อน
+    if (
+      status === "ซ่อมเสร็จแล้ว" &&
+      hidden !== "ใช่"
+    ) {
+
+      sheet
+        .getRange(i + 2, 14)
+        .setValue("ใช่");
+
+      clearedCount++;
+
+    }
+
+  }
+
+  console.log(
+    "เคลียร์งานที่ซ่อมเสร็จแล้วจำนวน " +
+    clearedCount +
+    " รายการ"
+  );
+
+  return {
+
+    success: true,
+
+    cleared: clearedCount,
+
+    message:
+      "เคลียร์งานที่ซ่อมเสร็จแล้ว " +
+      clearedCount +
+      " รายการ"
+
+  };
+
+}
 
 
   // =====================================================
