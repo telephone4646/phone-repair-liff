@@ -324,11 +324,32 @@
        ตาราง
        ===================================================== -->
 
-  <div class="table-card">
+ <div class="table-card">
 
-    <h2>📋 รายการแจ้งซ่อม</h2>
+  <div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:15px;
+    flex-wrap:wrap;
+  ">
 
-    <div id="loading" class="loading">
+    <h2 style="margin:0;">
+      📋 รายการแจ้งซ่อม
+    </h2>
+
+    <button
+      class="btn"
+      onclick="clearCompletedReports()"
+      style="background:#dc3545;"
+    >
+      🧹 เคลียร์งานที่ซ่อมแล้ว
+    </button>
+
+  </div>
+
+  <div id="loading" class="loading">
       กำลังโหลดข้อมูล...
     </div>
 
