@@ -199,6 +199,20 @@
             "building",
             building
           );
+          data.append(
+  "detail",
+  document.getElementById("detail").value
+);
+
+
+await fetch(
+  GAS_URL,
+  {
+    method: "POST",
+    body: data,
+    mode: "no-cors"
+  }
+);
 
 
           await fetch(
