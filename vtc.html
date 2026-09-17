@@ -137,7 +137,7 @@
     const GAS_URL =
       "https://script.google.com/macros/s/AKfycbzng6R4jUPXctKgFKu9xkVgQIDNW8ZBhJiHg1ozGYg31aiT_nIYkDAMqyhUt25N_R8U-g/exec";
 
-
+    let isSubmitting = false;
     document
       .getElementById("vtcForm")
       .addEventListener("submit", async function(event) {
@@ -237,7 +237,8 @@ await fetch(
 
         }
 
-
+        isSubmitting = false;
+        
         submitBtn.disabled = false;
 
         submitBtn.textContent =
