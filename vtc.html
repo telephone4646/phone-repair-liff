@@ -215,17 +215,7 @@ await fetch(
 );
 
 
-          await fetch(
-            GAS_URL,
-            {
-              method: "POST",
-              body: data,
-              mode: "no-cors"
-            }
-          );
-
-
-          message.textContent =
+              message.textContent =
             "✅ บันทึกแจ้งอุปกรณ์ VTC เรียบร้อยแล้ว";
 
           message.style.color = "green";
